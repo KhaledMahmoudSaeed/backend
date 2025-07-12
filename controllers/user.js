@@ -85,9 +85,10 @@ export const register = async (req, res, next) => {
 
 		await emailService.confirmEmail(email, token);
 		await invalidateCache([
-			"/api/users",
-			"/api/users/hospitals",
+			"*/api/users",
 			"/api/users/doctors",
+			"/api/users/hospitals",
+			"/api/users/hospitals",
 			"/api/users/doctors/specialization",
 		]);
 		return res
@@ -154,7 +155,7 @@ export const login = async (req, res) => {
 
 		return res.status(200).json({
 			userId: user._id,
-      Role: user.role,
+			Role: user.role,
 			accessToken,
 			refreshToken,
 		});
