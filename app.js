@@ -83,6 +83,7 @@ app.get("*", (req, res) => {
 });
 
 //Error handler route
+
 app.use((err, req, res, next) => {
 	if (res.headersSent) {
 		return;
@@ -143,18 +144,21 @@ import aiRouter from "./routes/ai.routes.js";
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app); // ✅ Shared HTTP server for Express and Socket.IO
+const server = http.createServer(app); 
 
-// ✅ Setup Socket.IO on same server
+
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // or your frontend URL
+    origin: (origin, callback) => {
+      callback(null, origin || "*");
+    },
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
-// 🧠 In-memory user storage
+
+
 let users = [];
 
 const addUser = (userId, socketId) => {
@@ -178,11 +182,13 @@ io.on("connection", (socket) => {
 
   socket.on("addUser", (userId) => {
     addUser(userId, socket.id);
+    console.log("🧠 All connected users:", users);
     io.emit("getUsers", users);
   });
 
   socket.on("sendMessage", ({ senderId, receiverId, text }) => {
     const user = getUser(receiverId);
+    console.log(receiverId)
     if (user) {
       io.to(user.socketId).emit("getMessage", { senderId, text });
       console.log(`📨 Message sent from ${senderId} to ${receiverId}: ${text}`);
@@ -201,7 +207,7 @@ io.on("connection", (socket) => {
 // ✅ Middlewares
 app.use(
   cors({
-    origin: (origin, callback) => {
+     origin: (origin, callback) => {
       callback(null, origin || "*");
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -258,3 +264,5 @@ mongoose
   .catch((err) => {
     console.log("❌ DB connection failed:", err.message);
   });
+
+  
